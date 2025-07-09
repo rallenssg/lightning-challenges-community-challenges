@@ -1,5 +1,5 @@
 @isTest
-public with sharing class ChallengeTest {
+public with sharing class MapAccountsToEmailDomainCountsTest {
 	@isTest
 	static void testBasicCase() {
 		// Arrange
