@@ -1,11 +1,12 @@
 {
 	"displayName": "wyckedrich",
 	"fullName": "Richard Allen",
-	"bio": "Salesforce Technical Lead leveraging Software Engineering (BS) foundation to build cross-system integrations and custom solutions. Proficient in Apex, SOQL, and Java, developing with React and modern web frameworks in my spare time. Started as an 'Accidental Admin' in 2018, now architecting solutions in Financial Services. MBA candidate (Aug 2025) with a love for learning and knowledge sharing.",
+	"bio": "Salesforce Technical Lead leveraging Software Engineering (BS) foundation to build cross-system integrations and custom solutions. Proficient in Apex and SOQL, loosely keeping up with full-stack development in my spare time. Started as an 'Accidental Admin' in 2018, now architecting solutions in Financial Services. MBA candidate (Aug 2025) with a love for learning and knowledge sharing.",
 	"links": {
 		"github": "https://github.com/rallenssg",
 		"linkedin": "https://linkedin.com/in/richforce",
 		"trailhead": "https://www.salesforce.com/trailblazer/richforce",
-		"website": "https://richforce.dev"
+		"website": "https://richforce.dev",
+		"twitter": "https://x.com/richforce_dev"
 	}
 }
