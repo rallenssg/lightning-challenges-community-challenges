@@ -7,7 +7,7 @@ public with sharing class MapAccountsToEmailDomainCountsSolution {
 	 * 
 	 * @return Map of Account Names as the outer keys pointing to Maps of unique Contact email domains pointing to the count of Contacts with matching the email domain keys as the values
 	 */
-	public static Map<String,Map<String,Integer>> mapAccountDomainsToContactCounts(List<Account> accounts, List<Contact> contacts) {
+	public static Map<String,Map<String,Integer>> calculateEmailDomainUsageByAccount(List<Account> accounts, List<Contact> contacts) {
 
 		// Early return for null or empty Accounts
         if (accounts == null || accounts.isEmpty()) return new Map<String,Map<String,Integer>>();
