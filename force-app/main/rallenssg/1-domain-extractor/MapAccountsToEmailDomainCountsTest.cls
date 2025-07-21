@@ -2,16 +2,25 @@
 public with sharing class MapAccountsToEmailDomainCountsTest {
 	static List<Account> accounts;
 	static List<Contact> contacts;
+	static Map<String, Map<String, Integer>> expected;
 
 	@isTest
-	static void testCalculateEmailDomainUsageNullAccounts() {
+	static void testCalculateEmailDomainUsageNullorEmptyAccounts() {
 		// Arrange - set up required data
-		if (!setContacts(false))
+		if (!setContacts(false)) // set accounts == null
 			Assert.fail('Test Null Accounts: Contacts could not be set');
-		Map<String, Map<String, Integer>> expected = new Map<String, Map<String, Integer>>();
+
+		setExpected();
 
 		// Act - call method to be tested
-		Map<String, Map<String, Integer>> result = MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(
+		Map<String, Map<String, Integer>> nullResult = MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(
+			accounts,
+			contacts
+		);
+
+		setAccounts(false); // set accounts == {}
+
+		Map<String, Map<String, Integer>> emptyResult = MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(
 			accounts,
 			contacts
 		);
@@ -19,41 +28,67 @@ public with sharing class MapAccountsToEmailDomainCountsTest {
 		// Assert - ensure expected outcome occurs
 		Assert.areEqual(
 			expected,
-			result,
+			nullResult,
 			'Empty Map should be returned when accounts input is null'
 		);
-	}
 
-	@isTest
-	static void testCalculateEmailDomainUsageEmptyAccounts() {
-		// Arrange - set up required data
-		if (!setInputs(false, false))
-			Assert.fail('Test Empty Accounts: Inputs could not be set');
-		Map<String, Map<String, Integer>> expected = new Map<String, Map<String, Integer>>();
-
-		// Act - call method to be tested
-		Map<String, Map<String, Integer>> result = MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(
-			accounts,
-			contacts
-		);
-
-		// Assert - ensure expected outcome occurs
 		Assert.areEqual(
 			expected,
-			result,
+			emptyResult,
 			'Empty Map should be returned when accounts input is empty'
 		);
 	}
 
 	@isTest
-	static void testCalculateEmailDomainUsageNullContacts() {
+	static void testCalculateEmailDomainUsageNullOrEmptyContacts() {
 		// Arrange - set up required data
-		setAccounts(true);
-		Map<String, Map<String, Integer>> expected = new Map<String, Map<String, Integer>>{
-			'Empire' => new Map<String, Integer>(),
-			'Rebel Alliance' => new Map<String, Integer>(),
-			'Jedi Order' => new Map<String, Integer>()
-		};
+		setAccounts(true); // set contacts == null
+		setExpected(true, false);
+
+		// Act - call method to be tested
+		Map<String, Map<String, Integer>> nullResult = MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(
+			accounts,
+			contacts
+		);
+
+		if(!setContacts(false)) // set contacts == {}
+			Assert.fail('Test Null Contacts: Contacts could not be set');
+
+		Map<String, Map<String, Integer>> emptyResult = MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(
+			accounts,
+			contacts
+		);
+
+		// Assert - ensure expected outcome occurs
+		Assert.areEqual(
+			expected,
+			nullResult,
+			'Account Names should be outer keys with empty inner Maps when contacts input is null'
+		);
+
+		// Assert - ensure expected outcome occurs
+		Assert.areEqual(
+			expected,
+			emptyResult,
+			'Account Names should be outer keys with empty inner Maps when contacts input is empty'
+		);
+	}
+
+	@isTest
+	static void testCalculateEmailDomainUsageAccountEdgeCases() {
+		// Arrange - set up required data
+		setInputs(false,false);
+		Account a;
+		accounts.add(a); // null Account
+		accounts.add(
+			new Account(Name = '', Id = '001000000000001') // blank Name Account
+		);
+		accounts.add(
+			new Account(Id = '001000000000002') // null Name Account
+		);
+		accounts.add(
+			new Account(Name = 'Test 2') // null Id Account
+		);
 
 		// Act - call method to be tested
 		Map<String, Map<String, Integer>> result = MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(
@@ -65,40 +100,73 @@ public with sharing class MapAccountsToEmailDomainCountsTest {
 		Assert.areEqual(
 			expected,
 			result,
-			'Account Names should be outer keys with empty inner Maps when contacts input is null'
+			'Expected empty Map for invalid Accounts'
 		);
 	}
 
 	@isTest
-	static void testCalculateEmailDomainUsageEmptyContacts() {
+	static void testCalculateEmailDomainUsageContactEdgeCases() {
 		// Arrange - set up required data
 		setInputs(true, false);
-		Map<String, Map<String, Integer>> expected = new Map<String, Map<String, Integer>>{
-			'Empire' => new Map<String, Integer>(),
-			'Rebel Alliance' => new Map<String, Integer>(),
-			'Jedi Order' => new Map<String, Integer>()
-		};
+		Contact c;
+		contacts.add(c); // null Contact
+		contacts.add(
+			new Contact(AccountId = '001000000000001') // null Email Contact
+		);
+		contacts.add(
+			new Contact(AccountId = '001000000000002', Email = '') // Empty Email Contact
+		);
+		contacts.add(
+			new Contact(Email = 'test@fake.com') // null AccountId Contact
+		);
+		contacts.add(
+			new Contact(AccountId = '001000000000004', Email = 'test@fake.com') // Invalid AccountId Contact
+		);
+		contacts.add(
+			new Contact(AccountId = '001000000000001', Email = 'test@test@fake.com') // invalid Email Contact: multiple @ symbols
+		);
+		contacts.add(
+			new Contact(AccountId = '001000000000001', Email = 'test@fake.c') // invalid Email Contact: single character TLD (top level domain)
+		);
+		contacts.add(
+			new Contact(AccountId = '001000000000001', Email = '@fake.com') // invalid Email Contact: no username
+		);
+		contacts.add(
+			new Contact(AccountId = '001000000000002', Email = 't est@fake.com') // invalid Email Contact: space in email
+		);
+		contacts.add(
+			new Contact(AccountId = '001000000000002', Email = 'test@') // invalid Email Contact: no domain
+		);
+		contacts.add(
+			new Contact(AccountId = '001000000000003', Email = 'testatfake.com') // invalid Email Contact: no @ symbol
+		);
+		contacts.add(
+			new Contact(AccountId = '001000000000003', Email = 'test@fakecom') // invalid Email Contact: no TLD (top level domain)
+		);
+		contacts.add(
+			new Contact(AccountId = '001000000000003', Email = 'test#$%@fakecom') // invalid Email Contact: invalid characters
+		);
 
 		// Act - call method to be tested
-		Map<String, Map<String, Integer>> result = MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(
+		Map<String, Map<String,Integer>> result = MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(
 			accounts,
 			contacts
 		);
 
 		// Assert - ensure expected outcome occurs
-		Assert.areEqual(expected, result, '');
+		Assert.areEqual(expected, result, 'Expected output Map to have Account Names as outer keys and empty inner maps as values when Contacts are invalid');
 	}
 
-	/**
-	 * // Arrange - set up required data
-		Map<String, Map<String,Integer>> expected = new Map<String, Map<String,Integer>>();
+	@IsTest
+	static void testCalculateEmailDomainUsage() {
+		setInputs(true, true);
 
 		// Act - call method to be tested
 		Map<String, Map<String,Integer>> result = MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(accounts, contacts);
 
 		// Assert - ensure expected outcome occurs
 		Assert.areEqual(expected, result, '');
-	 */
+	}
 
 	/**
 	 * Set up required data
@@ -112,6 +180,7 @@ public with sharing class MapAccountsToEmailDomainCountsTest {
 		if (doPopulateContacts && !doPopulateAccounts)
 			return false; // must populate accounts first
 
+		setExpected(doPopulateAccounts, doPopulateContacts);
 		setAccounts(doPopulateAccounts);
 		return setContacts(doPopulateContacts);
 	}
@@ -122,16 +191,14 @@ public with sharing class MapAccountsToEmailDomainCountsTest {
 	 * @param doPopulate Boolean indicating whether to populate accounts with data
 	 */
 	private static void setAccounts(Boolean doPopulate) {
-		accounts = new List<Account>();
 
-		if (doPopulate)
-			accounts.addAll(
-				new List<Account>{
-					new Account(Name = 'Empire', Id = '001000000000001'),
-					new Account(Name = 'Rebel Alliance', Id = '001000000000002'),
-					new Account(Name = 'Jedi Order', Id = '001000000000003')
-				}
-			);
+		if(doPopulate) accounts = new List<Account>{
+											new Account(Name = 'Empire', Id = '001000000000001'),
+											new Account(Name = 'Rebel Alliance', Id = '001000000000002'),
+											new Account(Name = 'Jedi Order', Id = '001000000000003')
+									};
+		else
+			accounts = new List<Account>();
 	}
 
 	/**
@@ -144,10 +211,10 @@ public with sharing class MapAccountsToEmailDomainCountsTest {
 	private static Boolean setContacts(Boolean doPopulate) {
 		contacts = new List<Contact>();
 
-		if (doPopulate && (accounts == null || accounts.isEmpty()))
+		if(doPopulate && (accounts == null || accounts.isEmpty()))
 			return false;
 
-		if (doPopulate)
+		if(doPopulate)
 			contacts.addAll(
 				new List<Contact>{
 					new Contact(Email = 'vader@imperial.emp', AccountId = '001000000000001'),
@@ -162,81 +229,37 @@ public with sharing class MapAccountsToEmailDomainCountsTest {
 		return true;
 	}
 
-	// @isTest
-	// static void testBasicCase() {
-	// 	// Arrange
-	// 	String input = 'test';
-	// 	String expected = 'expected result';
+	/**
+	 * Set expected reults
+	 */
+	private static void setExpected() {
+		expected = new Map<String, Map<String, Integer>>();
+	}
 
-	// 	// Act
-	// 	String result = ChallengeSolution.sampleMethod(input);
+	/**
+	 * Set expected results
+	 *
+	 * @param doPopulateAccounts Boolean indicating whether accounts is populated with data
+	 * @param doPopulateContacts Boolean indicating whether contacts is populated with data
+	 */
+	private static void setExpected(Boolean doPopulateAccounts, Boolean doPopulateContacts) {
+		if(doPopulateContacts && !doPopulateAccounts) return;
 
-	// 	// Assert
-	// 	Assert.areEqual(expected, result, 'Should return expected result for basic input');
-	// }
+		if(doPopulateContacts)
+			expected = new Map<String, Map<String, Integer>>{
+				'Empire' => new Map<String, Integer>{'imperial.emp' => 2},
+				'Rebel Alliance' => new Map<String, Integer>{'alliance.reb' => 1, 'issa.trp' => 1},
+				'Jedi Order' => new Map<String, Integer>{}
+			};
 
-	// @isTest
-	// static void testEdgeCase() {
-	// 	// Arrange
-	// 	String input = '';
-	// 	String expected = '';
+		else if(doPopulateAccounts)
+			expected = new Map<String, Map<String, Integer>>{
+				'Empire' => new Map<String, Integer>(),
+				'Rebel Alliance' => new Map<String, Integer>(),
+				'Jedi Order' => new Map<String, Integer>()
+			};
 
-	// 	// Act
-	// 	String result = ChallengeSolution.sampleMethod(input);
-
-	// 	// Assert
-	// 	Assert.areEqual(expected, result, 'Should handle empty string correctly');
-	// }
-
-	// @isTest
-	// static void testNullInput() {
-	// 	// Arrange
-	// 	String input = null;
-	// 	String expected = null;
-
-	// 	// Act
-	// 	String result = ChallengeSolution.sampleMethod(input);
-
-	// 	// Assert
-	// 	Assert.areEqual(expected, result, 'Should handle null input appropriately');
-	// }
-
-	// @isTest
-	// static void testAnotherCase() {
-	// 	// Arrange
-	// 	String input = 'another test';
-	// 	String expected = 'another expected result';
-
-	// 	// Act
-	// 	String result = ChallengeSolution.sampleMethod(input);
-
-	// 	// Assert
-	// 	Assert.areEqual(expected, result, 'Should handle different input correctly');
-	// }
-
-	// @isTest
-	// static void testSpecialCharacters() {
-	// 	// Arrange
-	// 	String input = 'special@chars#123';
-	// 	String expected = 'expected special result';
-
-	// 	// Act
-	// 	String result = ChallengeSolution.sampleMethod(input);
-
-	// 	// Assert
-	// 	Assert.areEqual(expected, result, 'Should handle special characters correctly');
-	// }
-
-	// @isTest
-	// static void testWhitespaceInput() {
-	// 	// Arrange
-	// 	String input = '   ';
-	// 	String expected = 'default result';
-
-	// 	// Act
-	// 	String result = ChallengeSolution.sampleMethod(input);
-
-	// 	// Assert
-	// 	Assert.areEqual(expected, result, 'Should handle whitespace-only input correctly');
-	// }
+		else
+			setExpected();
+	}
 }
