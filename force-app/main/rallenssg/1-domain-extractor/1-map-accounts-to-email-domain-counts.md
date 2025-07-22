@@ -7,50 +7,48 @@ Create a method that takes a List of Accounts and a List of Contacts as paramete
 1. Handle `null` or empty inputs
 2. Include every Account Name as a key in the output Map even if no Contacts or valid domains were found
 3. Exclude records where:
-   1. `Contact.email` == `null`
-   2. `Contact.email` in invalid format
-   3. `Account.name` == `null` or ''
+   1. `Contact.Email` == `null` or ''
+   2. `Contact.Email` in invalid format
+   3. `Account.Name` == `null` or ''
 
 **Note:** *The Account and Contact records are not saved to the database. There is a mock `Id` on the Account records. These `Id`'s are also used on the Contact `AccountId`'s for relating Contacts to Accounts. No need to execute SOQL or DML*
 
 Examples:
 
 ```text
-Input: accounts = [ { name = Hogwarts, Id = }, { name = Gringotts, Id = } ]
-       contacts = [ { email: albus.dumbledore@hogwarts.wiz, AccountId =  }, { email: harry.potter@hogwarts.wiz, AccountId = 001000000000001 }, { email: minerva.mcgonagall@hogwartsschool.edu, AccountId = 001000000000001 }, { email: sybill.trelawney@divination.hogwarts.wiz, AccountId = 001000000000001 }, { email: griphook@gringotts.gob, AccountId =  }, { email: griphook@gringotts.gob, AccountId =  } ]
-Output: {
-    "Hogwarts" => { "hogwarts.wiz" => 2, "hogwartsschool.edu" => 1, "divination.hogwarts.wiz" => 1 },
-    "Gringotts" => { "gringotts.gob" => 1 }
-}
-Explanation: Hogwarts has 2 Contacts with emails matching the "hogwarts.wiz" domain and 1 Contact for each of the "hogwartsschool.edu" and "divination.hogwarts.wiz" domains.
-             Gringotts has 1 Contact matching the "gringotts.gob" domain.
+Input: accounts = [ { Name = 'Empire', Id = '001000000000001' }, { Name = 'Rebel Alliance', Id = '001000000000002' }, { Name = 'Jedi Order', Id = '001000000000003' } ]
+       contacts = [ { Email = 'vader@imperial.emp', AccountId = '001000000000001' }, { Email = 'palpatine@imperial.emp', AccountId = '001000000000001' }, { Email = 'leia.organa@alliance.reb', AccountId = '001000000000002' }, { Email = 'gial.ackbar@issa.trp', AccountId = '001000000000002' }, { Email = '', AccountId = '001000000000003' }, { Email = 'The Force', AccountId = '001000000000003' } ]
+Output: { 
+    'Empire' => { 'imperial.emp' => 2 },
+    'Rebel Alliance' => { 'alliance.reb' => 1, 'issa.trp' => 1 },
+    'Jedi Order' => { }
+ }
+Explanation: 1. The Empire Account has 2 Contacts matching the "imperial.emp" domain.
+             2. The Rebel Alliance Account has 1 Contact matching the "alliance.reb" domain and 1 matching the "issa.trp" domain.
+             3. The Jedi Order Account Contacts do not have email addresses. They communicate with The Force.
 
-Input: {
-    { "name": "Empire" } => [ { "email": "vader@imperial.emp" }, { "email": "palpatine@imp.emp" } ],
-    { "name": "Rebel Alliance" } => [ { "email": "leia.organa@alliance.reb" }, { "email": "gial.ackbar@issa.trp" } ],
-    { "name": "Jedi Order" } => [ { "email": null } ]
-}
+Input: accounts = [ { Name = 'Empire', Id = '001000000000001' }, { Name = 'Rebel Alliance', Id = '001000000000002' }, { Name = 'Jedi Order', Id = '001000000000003' } ]
+       contacts = null
 Output: {
-    "Empire" => { "imperial.emp" => 1, "imp.emp" => 1 },
-    "Rebel Alliance" => { "alliance.reb" => 2 },
-    "Jedi Order" => {}
+    'Empire' => { },
+    'Rebel Alliance' => { },
+    'Jedi Order' => { }
 }
-Explanation: The Empire has one Contact each matching the "imperial.emp" and "imp.emp" domains.
-             The Rebel Alliance has 2 Contacts for the "alliance.reb" domain.
-             The Jedi Order Contacts do not have email addresses. They communicate with The Force
+Explanation: Account Names should be outer keys with empty Maps as the inner values when contacts input is null.
 
-Input: null
-Output: null
-Explanation: A null input should return null
+Input: accounts = null
+       contacts = { }
+Output: { }
+Explanation: When the accounts input is null an empty Map should be returned.
 ```
 
 Hints:
 
-1. [Hint 1 - general approach or key concept]
-2. [Hint 2 - specific technique or method to use]
-3. [Hint 3 - edge cases to consider]
-4. [Hint 4 - Apex-specific tips (e.g., String methods, syntax)]
-5. [Hint 5 - optimization or best practice tip]
+1. In the output Map - outer keys are Account Names, inner maps track domain counts.
+2. Build a Map for AccountId → Name lookups to avoid nested loops.
+3. Check for null lists, null objects, missing or blank fields, and invalid emails.
+4. Use String.isBlank(), substringAfter('@'), and Pattern/Matcher for email validation.
+5. Process each list once - initialize all Accounts first, then process Contacts in a single pass.
 
 ## Author
 

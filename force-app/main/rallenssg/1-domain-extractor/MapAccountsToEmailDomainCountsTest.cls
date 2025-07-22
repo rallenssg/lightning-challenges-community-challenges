@@ -2,115 +2,6 @@
 public with sharing class MapAccountsToEmailDomainCountsTest {
     
     @isTest
-    static void testNullOrEmptyAccounts() {
-        // Arrange
-        List<Contact> contacts = new List<Contact>();
-        Map<String, Map<String, Integer>> expected = new Map<String, Map<String, Integer>>();
-        
-        // Act & Assert - Null accounts
-        Map<String, Map<String, Integer>> nullResult = 
-            MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(null, contacts);
-        Assert.areEqual(expected, nullResult, 
-            'Empty Map should be returned when accounts input is null');
-        
-        // Act & Assert - Empty accounts
-        Map<String, Map<String, Integer>> emptyResult = 
-            MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(new List<Account>(), contacts);
-        Assert.areEqual(expected, emptyResult, 
-            'Empty Map should be returned when accounts input is empty');
-    }
-    
-    @isTest
-    static void testNullOrEmptyContacts() {
-        // Arrange
-        List<Account> accounts = new List<Account>{
-            new Account(Name = 'Empire', Id = '001000000000001'),
-            new Account(Name = 'Rebel Alliance', Id = '001000000000002'),
-            new Account(Name = 'Jedi Order', Id = '001000000000003')
-        };
-        Map<String, Map<String, Integer>> expected = new Map<String, Map<String, Integer>>{
-            'Empire' => new Map<String, Integer>(),
-            'Rebel Alliance' => new Map<String, Integer>(),
-            'Jedi Order' => new Map<String, Integer>()
-        };
-        
-        // Act & Assert - Null contacts
-        Map<String, Map<String, Integer>> nullResult = 
-            MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(accounts, null);
-        Assert.areEqual(expected, nullResult, 
-            'Account Names should be outer keys with empty inner Maps when contacts input is null');
-        
-        // Act & Assert - Empty contacts
-        Map<String, Map<String, Integer>> emptyResult = 
-            MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(accounts, new List<Contact>());
-        Assert.areEqual(expected, emptyResult, 
-            'Account Names should be outer keys with empty inner Maps when contacts input is empty');
-    }
-    
-    @isTest
-    static void testInvalidAccounts() {
-        // Arrange
-        Account nullAccount;
-        List<Account> accounts = new List<Account>{
-            nullAccount,                                       // null Account
-            new Account(Name = '', Id = '001000000000001'),   // blank Name Account
-            new Account(Id = '001000000000002'),              // null Name Account
-            new Account(Name = 'Test 2')                      // null Id Account
-        };
-        List<Contact> contacts = new List<Contact>();
-        Map<String, Map<String, Integer>> expected = new Map<String, Map<String, Integer>>();
-        
-        // Act
-        Map<String, Map<String, Integer>> result = 
-            MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(accounts, contacts);
-        
-        // Assert
-        Assert.areEqual(expected, result, 
-            'Expected empty Map for invalid Accounts');
-    }
-    
-    @isTest
-    static void testInvalidContactsAndEmails() {
-        // Arrange
-        List<Account> accounts = new List<Account>{
-            new Account(Name = 'Empire', Id = '001000000000001'),
-            new Account(Name = 'Rebel Alliance', Id = '001000000000002'),
-            new Account(Name = 'Jedi Order', Id = '001000000000003')
-        };
-        
-        Contact nullContact;
-        List<Contact> contacts = new List<Contact>{
-            nullContact,                                                                    // null Contact
-            new Contact(AccountId = '001000000000001'), // null Email Contact
-            new Contact(AccountId = '001000000000002', Email = ''), // Empty Email Contact
-            new Contact(Email = 'test@fake.com'), // null AccountId Contact
-            new Contact(AccountId = '001000000000004', Email = 'test@fake.com'), // Invalid AccountId Contact
-            new Contact(AccountId = '001000000000001', Email = 'test@test@fake.com'), // multiple @ symbols
-            new Contact(AccountId = '001000000000001', Email = 'test@fake.c'), // single character TLD
-            new Contact(AccountId = '001000000000001', Email = '@fake.com'), // no username
-            new Contact(AccountId = '001000000000002', Email = 't est@fake.com'), // space in email
-            new Contact(AccountId = '001000000000002', Email = 'test@'), // no domain
-            new Contact(AccountId = '001000000000003', Email = 'testatfake.com'), // no @ symbol
-            new Contact(AccountId = '001000000000003', Email = 'test@fakecom'), // no TLD
-            new Contact(AccountId = '001000000000003', Email = 'test#$%@fakecom') // invalid characters
-        };
-        
-        Map<String, Map<String, Integer>> expected = new Map<String, Map<String, Integer>>{
-            'Empire' => new Map<String, Integer>(),
-            'Rebel Alliance' => new Map<String, Integer>(),
-            'Jedi Order' => new Map<String, Integer>()
-        };
-        
-        // Act
-        Map<String, Map<String, Integer>> result = 
-            MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(accounts, contacts);
-        
-        // Assert
-        Assert.areEqual(expected, result, 
-            'Expected output Map to have Account Names as outer keys and empty inner maps as values when Contacts are invalid');
-    }
-    
-    @isTest
     static void testValidScenarioWithMultipleContactsPerDomain() {
         // Arrange
         List<Account> accounts = new List<Account>{
@@ -141,6 +32,144 @@ public with sharing class MapAccountsToEmailDomainCountsTest {
         // Assert
         Assert.areEqual(expected, result, 
             'Should correctly count multiple contacts per domain and handle mixed valid/invalid emails');
+    }
+
+    @isTest
+    static void testNullAccounts() {
+        // Arrange
+        List<Contact> contacts = new List<Contact>();
+        Map<String, Map<String, Integer>> expected = new Map<String, Map<String, Integer>>();
+        
+        // Act
+        Map<String, Map<String, Integer>> result = 
+            MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(null, contacts);
+        
+        // Assert
+        Assert.areEqual(expected, result, 
+            'Empty Map should be returned when accounts input is null');
+    }
+    
+    @isTest
+    static void testEmptyAccounts() {
+        // Arrange
+        List<Contact> contacts = new List<Contact>();
+        Map<String, Map<String, Integer>> expected = new Map<String, Map<String, Integer>>();
+        
+        // Act
+        Map<String, Map<String, Integer>> result = 
+            MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(new List<Account>(), contacts);
+        
+        // Assert
+        Assert.areEqual(expected, result, 
+            'Empty Map should be returned when accounts input is empty');
+    }
+    
+    @isTest
+    static void testNullContacts() {
+        // Arrange
+        List<Account> accounts = new List<Account>{
+            new Account(Name = 'Empire', Id = '001000000000001'),
+            new Account(Name = 'Rebel Alliance', Id = '001000000000002'),
+            new Account(Name = 'Jedi Order', Id = '001000000000003')
+        };
+        Map<String, Map<String, Integer>> expected = new Map<String, Map<String, Integer>>{
+            'Empire' => new Map<String, Integer>(),
+            'Rebel Alliance' => new Map<String, Integer>(),
+            'Jedi Order' => new Map<String, Integer>()
+        };
+        
+        // Act
+        Map<String, Map<String, Integer>> result = 
+            MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(accounts, null);
+        
+        // Assert
+        Assert.areEqual(expected, result, 'Account Names should be outer keys with empty inner Maps when contacts input is null');
+    }
+    
+    @isTest
+    static void testEmptyContacts() {
+        // Arrange
+        List<Account> accounts = new List<Account>{
+            new Account(Name = 'Empire', Id = '001000000000001'),
+            new Account(Name = 'Rebel Alliance', Id = '001000000000002'),
+            new Account(Name = 'Jedi Order', Id = '001000000000003')
+        };
+        Map<String, Map<String, Integer>> expected = new Map<String, Map<String, Integer>>{
+            'Empire' => new Map<String, Integer>(),
+            'Rebel Alliance' => new Map<String, Integer>(),
+            'Jedi Order' => new Map<String, Integer>()
+        };
+        
+        // Act
+        Map<String, Map<String, Integer>> result = 
+            MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(accounts, new List<Contact>());
+        
+        // Assert
+        Assert.areEqual(expected, result, 
+            'Account Names should be outer keys with empty inner Maps when contacts input is empty');
+    }
+    
+    @isTest
+    static void testInvalidAccounts() {
+        // Arrange
+        Account nullAccount;
+        List<Account> accounts = new List<Account>{
+            nullAccount, // null Account
+            new Account(Name = '', Id = '001000000000001'), // blank Name Account
+            new Account(Id = '001000000000002'), // null Name Account
+            new Account(Name = 'Test 2') // null Id Account
+        };
+        List<Contact> contacts = new List<Contact>();
+        Map<String, Map<String, Integer>> expected = new Map<String, Map<String, Integer>>();
+        
+        // Act
+        Map<String, Map<String, Integer>> result = 
+            MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(accounts, contacts);
+        
+        // Assert
+        Assert.areEqual(expected, result, 
+            'Expected empty Map for invalid Accounts');
+    }
+    
+    @isTest
+    static void testInvalidContactsAndEmails() {
+        // Arrange
+        List<Account> accounts = new List<Account>{
+            new Account(Name = 'Empire', Id = '001000000000001'),
+            new Account(Name = 'Rebel Alliance', Id = '001000000000002'),
+            new Account(Name = 'Jedi Order', Id = '001000000000003')
+        };
+        
+        Contact nullContact;
+        List<Contact> contacts = new List<Contact>{
+            nullContact, // null Contact
+            new Contact(AccountId = '001000000000001'), // null Email Contact
+            new Contact(AccountId = '001000000000002', Email = ''), // Empty Email Contact
+            new Contact(Email = 'test@fake.com'), // null AccountId Contact
+            new Contact(AccountId = '001000000000004', Email = 'test@fake.com'), // Invalid AccountId Contact
+            new Contact(AccountId = '001000000000001', Email = 'test@test@fake.com'), // multiple @ symbols
+            new Contact(AccountId = '001000000000001', Email = 'test@fake.c'), // single character TLD
+            new Contact(AccountId = '001000000000001', Email = '@fake.com'), // no username
+            new Contact(AccountId = '001000000000002', Email = 't est@fake.com'), // space in email
+            new Contact(AccountId = '001000000000002', Email = 'test@'), // no domain
+            new Contact(AccountId = '001000000000003', Email = 'testatfake.com'), // no @ symbol
+            new Contact(AccountId = '001000000000003', Email = 'test@fakecom'), // no TLD
+            new Contact(AccountId = '001000000000003', Email = 'test#$%@fakecom') // invalid characters
+        };
+        
+        Map<String, Map<String, Integer>> expected = new Map<String, Map<String, Integer>>{
+            'Empire' => new Map<String, Integer>(),
+            'Rebel Alliance' => new Map<String, Integer>(),
+            'Jedi Order' => new Map<String, Integer>()
+        };
+        
+        // Act
+        Map<String, Map<String, Integer>> result = 
+            MapAccountsToEmailDomainCountsSolution.calculateEmailDomainUsageByAccount(accounts, contacts);
+        
+        // Assert
+        Assert.areEqual(expected, result, 
+            'Expected output Map to have Account Names as outer keys and empty inner maps as values when Contacts are invalid');
     }
     
     @isTest
